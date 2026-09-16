@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>LocalFix - Book Service</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+    <!-- NAVBAR -->
+
+    <nav>
+
+        <div class="logo">
+            LocalFix
+        </div>
+
+        <div class="nav-links">
+
+            <a href="index.html">Home</a>
+
+            <a href="services.html">Services</a>
+
+            <a href="bookings.html">My Bookings</a>
+
+            <a href="login.html">Login</a>
+
+        </div>
+
+    </nav>
+
+
+
+    <!-- BOOKING SECTION -->
+
+    <section class="booking-section">
+
+        <div class="booking-header">
+
+            <h1>
+                Book a Service
+            </h1>
+
+            <p id="selectedService">
+                Loading service...
+            </p>
+
+        </div>
+
+
+
+        <!-- PROVIDERS -->
+
+        <div class="providers-area">
+
+            <h2>
+                Choose a Professional
+            </h2>
+
+            <div id="providersContainer">
+
+                <p>
+                    Loading providers...
+                </p>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- BOOKING FORM -->
+
+        <div class="booking-form-card">
+
+            <h2>
+                Booking Details
+            </h2>
+
+
+            <form id="bookingForm">
+
+                <input
+                    type="hidden"
+                    id="provider_id"
+                >
+
+
+                <label>
+                    Selected Service
+                </label>
+
+                <input
+                    type="text"
+                    id="service"
+                    placeholder="Service"
+                    readonly
+                    required
+                >
+
+
+                <label>
+                    Date
+                </label>
+
+                <input
+                    type="date"
+                    id="date"
+                    required
+                >
+
+
+                <label>
+                    Time
+                </label>
+
+                <input
+                    type="time"
+                    id="time"
+                    required
+                >
+
+
+                <label>
+                    Address
+                </label>
+
+                <input
+                    type="text"
+                    id="address"
+                    placeholder="Enter your address"
+                    required
+                >
+
+
+                <label>
+                    Problem Description
+                </label>
+
+                <textarea
+                    id="description"
+                    placeholder="Describe the problem..."
+                    rows="5"
+                    required
+                ></textarea>
+
+
+                <button type="submit">
+                    Confirm Booking
+                </button>
+
+            </form>
+
+
+            <p id="bookingMessage"></p>
+
+        </div>
+
+    </section>
+
+
+
+    <footer>
+
+        <p>
+            © 2026 LocalFix. All rights reserved.
+        </p>
+
+    </footer>
+
+
+
+    <script src="js/app.js"></script>
+
+
+    <script>
+
+
+        // =========================================
+        // LOGIN CHECK
+        // =========================================
+
+        const token =
+            localStorage.getItem(
+                "access_token"
+            );
+
+
+        if (!token) {
+
+            alert(
+                "Please login to book a service."
+            );
+
+            window.location.href =
+                "login.html";
+
+        }
+
+
+
+        // =========================================
+        // URL PARAMETERS
+        // =========================================
+
+        const params =
+            new URLSearchParams(
+                window.location.search
+            );
+
+
+        const serviceName =
+            params.get("service");
+
+
+        const selectedProviderId =
+            params.get("provider");
+
+
+
+        // =========================================
+        // DATE AND TIME
+        // =========================================
+
+        const dateInput =
+            document.getElementById("date");
+
+
+        const timeInput =
+            document.getElementById("time");
+
+
+        const today =
+            new Date()
+                .toISOString()
+                .split("T")[0];
+
+
+        dateInput.min = today;
+
+
+
+        // =========================================
+        // DISPLAY SERVICE
+        // =========================================
+
+        if (serviceName) {
+
+            document.getElementById(
+                "service"
+            ).value = serviceName;
+
+
+            document.getElementById(
+                "selectedService"
+            ).textContent =
+                `Book a ${serviceName} professional`;
+
+        }
+
+
+
+        // =========================================
+        // LOAD PROVIDERS
+        // =========================================
+
+        async function loadProviders() {
+
+            const container =
+                document.getElementById(
+                    "providersContainer"
+                );
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_URL}/providers/`
+                    );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "Failed to load providers"
+                    );
+
+                }
+
+
+                const providers =
+                    await response.json();
+
+
+                const filteredProviders =
+                    providers.filter(
+                        provider =>
+
+                            provider.service
+                                .toLowerCase()
+                                .trim() ===
+
+                            serviceName
+                                .toLowerCase()
+                                .trim()
+                    );
+
+
+                container.innerHTML = "";
+
+
+                if (
+                    filteredProviders.length === 0
+                ) {
+
+                    container.innerHTML = `
+
+                        <div class="no-providers">
+
+                            <h3>
+                                No professionals available
+                            </h3>
+
+                            <p>
+                                We couldn't find a professional
+                                for this service.
+                            </p>
+
+                        </div>
+
+                    `;
+
+                    return;
+
+                }
+
+
+                filteredProviders.forEach(
+                    provider => {
+
+                        const card =
+                            document.createElement(
+                                "div"
+                            );
+
+
+                        card.className =
+                            "provider-card";
+
+
+                        if (
+                            provider._id ===
+                            selectedProviderId
+                        ) {
+
+                            card.classList.add(
+                                "selected-provider"
+                            );
+
+                        }
+
+
+                        card.innerHTML = `
+
+                            <div class="provider-info">
+
+                                <div class="provider-avatar">
+                                    👨‍🔧
+                                </div>
+
+
+                                <div>
+
+                                    <h3>
+                                        ${provider.name}
+                                    </h3>
+
+                                    <p class="provider-service">
+                                        ${provider.service}
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="provider-details">
+
+                                <span>
+                                    📍 ${provider.location}
+                                </span>
+
+                                <span>
+                                    ⭐ ${provider.experience}
+                                    years experience
+                                </span>
+
+                                <span>
+                                    💰 ₹${provider.price}
+                                </span>
+
+                            </div>
+
+
+                            <div class="provider-buttons">
+
+                                <button
+                                    type="button"
+                                    class="profile-button"
+                                    onclick="viewProvider(
+                                        '${provider._id}'
+                                    )"
+                                >
+                                    View Profile
+                                </button>
+
+
+                                <button
+                                    type="button"
+                                    onclick="selectProvider(
+                                        '${provider._id}',
+                                        '${provider.name}'
+                                    )"
+                                >
+                                    Select Provider
+                                </button>
+
+                            </div>
+
+                        `;
+
+
+                        container.appendChild(
+                            card
+                        );
+
+
+                        if (
+                            provider._id ===
+                            selectedProviderId
+                        ) {
+
+                            selectProvider(
+                                provider._id,
+                                provider.name
+                            );
+
+                        }
+
+                    }
+                );
+
+            }
+
+
+            catch (error) {
+
+                console.error(
+                    "Provider error:",
+                    error
+                );
+
+
+                container.innerHTML = `
+
+                    <div class="no-providers">
+
+                        <p>
+                            Could not load providers.
+                        </p>
+
+                    </div>
+
+                `;
+
+            }
+
+        }
+
+
+
+        // =========================================
+        // VIEW PROVIDER
+        // =========================================
+
+        function viewProvider(
+            providerId
+        ) {
+
+            window.location.href =
+                `provider.html?id=${
+                    encodeURIComponent(
+                        providerId
+                    )
+                }`;
+
+        }
+
+
+
+        // =========================================
+        // SELECT PROVIDER
+        // =========================================
+
+        function selectProvider(
+            providerId,
+            providerName
+        ) {
+
+            document.getElementById(
+                "provider_id"
+            ).value = providerId;
+
+
+            document.getElementById(
+                "bookingMessage"
+            ).textContent =
+                `Selected provider: ${providerName}`;
+
+
+            document
+                .querySelectorAll(
+                    ".provider-card"
+                )
+                .forEach(card => {
+
+                    card.classList.remove(
+                        "selected-provider"
+                    );
+
+                });
+
+
+            document
+                .getElementById(
+                    "bookingForm"
+                )
+                .scrollIntoView({
+                    behavior: "smooth"
+                });
+
+        }
+
+
+
+        // =========================================
+        // BOOKING SUBMIT
+        // =========================================
+
+        document
+            .getElementById(
+                "bookingForm"
+            )
+            .addEventListener(
+                "submit",
+                async function(event) {
+
+                    event.preventDefault();
+
+
+                    const currentToken =
+                        localStorage.getItem(
+                            "access_token"
+                        );
+
+
+                    if (!currentToken) {
+
+                        alert(
+                            "Please login first."
+                        );
+
+                        window.location.href =
+                            "login.html";
+
+                        return;
+
+                    }
+
+
+                    const user =
+                        getUserFromToken();
+
+
+                    if (!user) {
+
+                        alert(
+                            "Please login again."
+                        );
+
+                        localStorage.removeItem(
+                            "access_token"
+                        );
+
+                        window.location.href =
+                            "login.html";
+
+                        return;
+
+                    }
+
+
+                    const providerId =
+                        document.getElementById(
+                            "provider_id"
+                        ).value;
+
+
+                    if (!providerId) {
+
+                        alert(
+                            "Please select a provider first."
+                        );
+
+                        return;
+
+                    }
+
+
+                    const selectedDate =
+                        dateInput.value;
+
+
+                    if (
+                        selectedDate < today
+                    ) {
+
+                        alert(
+                            "Please select today or a future date."
+                        );
+
+                        return;
+
+                    }
+
+
+                    const selectedTime =
+                        timeInput.value;
+
+
+                    const currentTime =
+                        new Date()
+                            .toTimeString()
+                            .slice(0, 5);
+
+
+                    if (
+                        selectedDate === today &&
+                        selectedTime <= currentTime
+                    ) {
+
+                        alert(
+                            "Please select a future time."
+                        );
+
+                        return;
+
+                    }
+
+
+                    const bookingData = {
+
+                        user_id:
+                            user.user_id,
+
+                        provider_id:
+                            providerId,
+
+                        service:
+                            document.getElementById(
+                                "service"
+                            ).value,
+
+                        date:
+                            selectedDate,
+
+                        time:
+                            selectedTime,
+
+                        address:
+                            document.getElementById(
+                                "address"
+                            ).value,
+
+                        description:
+                            document.getElementById(
+                                "description"
+                            ).value
+
+                    };
+
+
+                    try {
+
+                        const response =
+                            await fetch(
+                                `${API_URL}/bookings/`,
+                                {
+
+                                    method: "POST",
+
+                                    headers: {
+
+                                        "Content-Type":
+                                            "application/json",
+
+                                        "Authorization":
+                                            `Bearer ${currentToken}`
+
+                                    },
+
+                                    body:
+                                        JSON.stringify(
+                                            bookingData
+                                        )
+
+                                }
+                            );
+
+
+                        const data =
+                            await response.json();
+
+
+                        if (!response.ok) {
+
+                            document.getElementById(
+                                "bookingMessage"
+                            ).textContent =
+                                data.detail ||
+                                "Booking failed";
+
+                            return;
+
+                        }
+
+
+                        document.getElementById(
+                            "bookingMessage"
+                        ).textContent =
+                            "✅ Booking created successfully!";
+
+
+                        setTimeout(
+                            () => {
+
+                                window.location.href =
+                                    "bookings.html";
+
+                            },
+                            1000
+                        );
+
+                    }
+
+
+                    catch (error) {
+
+                        console.error(
+                            "Booking error:",
+                            error
+                        );
+
+
+                        document.getElementById(
+                            "bookingMessage"
+                        ).textContent =
+                            "Could not connect to server.";
+
+                    }
+
+                }
+            );
+
+
+
+        // =========================================
+        // START
+        // =========================================
+
+        loadProviders();
+
+    </script>
+
+
+</body>
+
+</html>

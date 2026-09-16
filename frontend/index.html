@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>LocalFix - Home</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+    <!-- NAVBAR -->
+
+    <nav>
+
+        <div class="logo">
+            LocalFix
+        </div>
+
+
+        <div class="nav-links">
+
+            <a href="index.html">
+                Home
+            </a>
+
+            <a href="services.html">
+                Services
+            </a>
+
+            <a href="bookings.html">
+                My Bookings
+            </a>
+
+            <a href="login.html">
+                Login
+            </a>
+
+        </div>
+
+    </nav>
+
+
+
+    <!-- HERO -->
+
+    <section class="hero">
+
+        <div class="hero-content">
+
+            <h1>
+                Find Trusted Professionals Near You
+            </h1>
+
+
+            <p>
+                Book reliable electricians, plumbers,
+                AC technicians, cleaners and more.
+            </p>
+
+
+            <div class="search-box">
+
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="What service do you need?"
+                >
+
+
+                <button
+                    onclick="searchServices()"
+                >
+                    Search
+                </button>
+
+            </div>
+
+
+            <div class="hero-links">
+
+                <span>
+                    ⚡ Electrician
+                </span>
+
+                <span>
+                    🔧 Plumber
+                </span>
+
+                <span>
+                    ❄️ AC Repair
+                </span>
+
+                <span>
+                    🧹 Cleaning
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- POPULAR SERVICES -->
+
+    <section class="categories">
+
+        <h2>
+            Popular Services
+        </h2>
+
+
+        <p class="section-description">
+            Professional help whenever you need it.
+        </p>
+
+
+        <div class="category-container">
+
+
+            <div
+                class="category-card"
+                onclick="openService('Electrician')"
+            >
+
+                <div class="home-service-icon">
+                    ⚡
+                </div>
+
+                <h3>
+                    Electrician
+                </h3>
+
+                <p>
+                    Electrical repairs and installations
+                </p>
+
+            </div>
+
+
+
+            <div
+                class="category-card"
+                onclick="openService('Plumber')"
+            >
+
+                <div class="home-service-icon">
+                    🔧
+                </div>
+
+                <h3>
+                    Plumber
+                </h3>
+
+                <p>
+                    Plumbing repairs and maintenance
+                </p>
+
+            </div>
+
+
+
+            <div
+                class="category-card"
+                onclick="openService('AC Repair')"
+            >
+
+                <div class="home-service-icon">
+                    ❄️
+                </div>
+
+                <h3>
+                    AC Repair
+                </h3>
+
+                <p>
+                    AC servicing and repair
+                </p>
+
+            </div>
+
+
+
+            <div
+                class="category-card"
+                onclick="openService('Cleaning')"
+            >
+
+                <div class="home-service-icon">
+                    🧹
+                </div>
+
+                <h3>
+                    Cleaning
+                </h3>
+
+                <p>
+                    Home and office cleaning
+                </p>
+
+            </div>
+
+
+
+            <div
+                class="category-card"
+                onclick="openService('Carpenter')"
+            >
+
+                <div class="home-service-icon">
+                    🪚
+                </div>
+
+                <h3>
+                    Carpenter
+                </h3>
+
+                <p>
+                    Furniture and woodwork services
+                </p>
+
+            </div>
+
+
+
+            <div
+                class="category-card"
+                onclick="openService('Laptop Repair')"
+            >
+
+                <div class="home-service-icon">
+                    💻
+                </div>
+
+                <h3>
+                    Laptop Repair
+                </h3>
+
+                <p>
+                    Laptop repair and troubleshooting
+                </p>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- HOW IT WORKS -->
+
+    <section class="how-it-works">
+
+        <h2>
+            How LocalFix Works
+        </h2>
+
+
+        <div class="steps-container">
+
+
+            <div class="step-card">
+
+                <div class="step-number">
+                    1
+                </div>
+
+                <h3>
+                    Choose a Service
+                </h3>
+
+                <p>
+                    Find the service you need.
+                </p>
+
+            </div>
+
+
+
+            <div class="step-card">
+
+                <div class="step-number">
+                    2
+                </div>
+
+                <h3>
+                    Select a Professional
+                </h3>
+
+                <p>
+                    Compare professionals and choose one.
+                </p>
+
+            </div>
+
+
+
+            <div class="step-card">
+
+                <div class="step-number">
+                    3
+                </div>
+
+                <h3>
+                    Book
+                </h3>
+
+                <p>
+                    Select your preferred date and time.
+                </p>
+
+            </div>
+
+
+
+            <div class="step-card">
+
+                <div class="step-number">
+                    4
+                </div>
+
+                <h3>
+                    Get the Job Done
+                </h3>
+
+                <p>
+                    Your professional arrives at your location.
+                </p>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- FOOTER -->
+
+    <footer>
+
+        <p>
+            © 2026 LocalFix. All rights reserved.
+        </p>
+
+    </footer>
+
+
+
+    <script src="js/app.js"></script>
+
+
+</body>
+
+</html>

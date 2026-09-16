@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>LocalFix - Services</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+    <!-- NAVBAR -->
+
+    <nav>
+
+        <div class="logo">
+            LocalFix
+        </div>
+
+        <div class="nav-links">
+
+            <a href="index.html">
+                Home
+            </a>
+
+            <a href="services.html">
+                Services
+            </a>
+
+            <a href="bookings.html">
+                My Bookings
+            </a>
+
+            <a href="login.html">
+                Login
+            </a>
+
+        </div>
+
+    </nav>
+
+
+
+    <!-- SERVICES -->
+
+    <section class="services-section">
+
+        <div class="services-header">
+
+            <h1>
+                Find a Service
+            </h1>
+
+            <p>
+                Choose a service and book a trusted professional.
+            </p>
+
+        </div>
+
+
+
+        <!-- SEARCH -->
+
+        <div class="service-search">
+
+            <input
+                type="text"
+                id="serviceSearch"
+                placeholder="Search services..."
+            >
+
+        </div>
+
+
+
+        <!-- SERVICES -->
+
+        <div
+            id="servicesContainer"
+            class="services-grid"
+        >
+
+            <p>
+                Loading services...
+            </p>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- FOOTER -->
+
+    <footer>
+
+        <p>
+            © 2026 LocalFix. All rights reserved.
+        </p>
+
+    </footer>
+
+
+
+    <script src="js/app.js"></script>
+
+
+    <script>
+
+        let allServices = [];
+
+
+        /*
+        =========================================
+        Get search value from URL
+        =========================================
+        */
+
+        const urlParams =
+            new URLSearchParams(
+                window.location.search
+            );
+
+        const urlSearch =
+            urlParams.get("search");
+
+
+        /*
+        =========================================
+        Load Services
+        =========================================
+        */
+
+        async function displayServices() {
+
+            const container =
+                document.getElementById(
+                    "servicesContainer"
+                );
+
+            try {
+
+                allServices =
+                    await loadServices();
+
+
+                /*
+                Put URL search value
+                inside search box
+                */
+
+                if (urlSearch) {
+
+                    document.getElementById(
+                        "serviceSearch"
+                    ).value = urlSearch;
+
+                }
+
+
+                /*
+                Filter automatically
+                */
+
+                filterServices();
+
+            }
+
+            catch (error) {
+
+                console.error(error);
+
+                container.innerHTML = `
+                    <div class="no-providers">
+
+                        <h3>
+                            Could not load services
+                        </h3>
+
+                        <p>
+                            Please try again later.
+                        </p>
+
+                    </div>
+                `;
+
+            }
+
+        }
+
+
+
+        /*
+        =========================================
+        Filter Services
+        =========================================
+        */
+
+        function filterServices() {
+
+            const searchInput =
+                document.getElementById(
+                    "serviceSearch"
+                );
+
+
+            const search =
+                searchInput.value
+                    .toLowerCase()
+                    .trim();
+
+
+            const filteredServices =
+                allServices.filter(service => {
+
+                    const name =
+                        service.name
+                            .toLowerCase();
+
+                    const category =
+                        service.category
+                            .toLowerCase();
+
+                    const description =
+                        service.description
+                            .toLowerCase();
+
+
+                    return (
+
+                        name.includes(search) ||
+
+                        category.includes(search) ||
+
+                        description.includes(search)
+
+                    );
+
+                });
+
+
+            renderServices(
+                filteredServices
+            );
+
+        }
+
+
+
+        /*
+        =========================================
+        Render Service Cards
+        =========================================
+        */
+
+        function renderServices(
+            services
+        ) {
+
+            const container =
+                document.getElementById(
+                    "servicesContainer"
+                );
+
+
+            container.innerHTML = "";
+
+
+            if (services.length === 0) {
+
+                container.innerHTML = `
+
+                    <div class="no-providers">
+
+                        <h3>
+                            No services found
+                        </h3>
+
+                        <p>
+                            Try searching for another service.
+                        </p>
+
+                    </div>
+
+                `;
+
+                return;
+
+            }
+
+
+            services.forEach(service => {
+
+                const card =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                card.className =
+                    "service-card";
+
+
+                card.innerHTML = `
+
+                    <div class="service-icon">
+
+                        ${getServiceIcon(
+                            service.category
+                        )}
+
+                    </div>
+
+
+                    <h3>
+                        ${service.name}
+                    </h3>
+
+
+                    <p class="service-description">
+
+                        ${service.description}
+
+                    </p>
+
+
+                    <div class="service-price">
+
+                        ₹${service.price}
+
+                        <span>
+                            onwards
+                        </span>
+
+                    </div>
+
+
+                    <button
+                        onclick="bookService(
+                            '${service.name}'
+                        )"
+                    >
+
+                        Book Now
+
+                    </button>
+
+                `;
+
+
+                container.appendChild(
+                    card
+                );
+
+            });
+
+        }
+
+
+
+        /*
+        =========================================
+        Service Icons
+        =========================================
+        */
+
+        function getServiceIcon(
+            category
+        ) {
+
+            const icons = {
+
+                "Electrician": "⚡",
+
+                "Plumber": "🔧",
+
+                "AC Repair": "❄️",
+
+                "Cleaning": "🧹",
+
+                "Carpenter": "🪚",
+
+                "Laptop Repair": "💻"
+
+            };
+
+
+            return (
+                icons[category] ||
+                "🛠️"
+            );
+
+        }
+
+
+
+        /*
+        =========================================
+        Book Service
+        =========================================
+        */
+
+        function bookService(
+            serviceName
+        ) {
+
+            window.location.href =
+                `booking.html?service=${
+                    encodeURIComponent(
+                        serviceName
+                    )
+                }`;
+
+        }
+
+
+
+        /*
+        =========================================
+        Live Search
+        =========================================
+        */
+
+        document
+            .getElementById(
+                "serviceSearch"
+            )
+            .addEventListener(
+                "input",
+                filterServices
+            );
+
+
+
+        /*
+        =========================================
+        Start
+        =========================================
+        */
+
+        displayServices();
+
+    </script>
+
+
+</body>
+
+</html>

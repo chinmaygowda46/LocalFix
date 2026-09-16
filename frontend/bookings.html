@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>LocalFix - My Bookings</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+<nav>
+
+    <div class="logo">
+        LocalFix
+    </div>
+
+    <div class="nav-links">
+
+        <a href="index.html">Home</a>
+
+        <a href="services.html">Services</a>
+
+        <a href="bookings.html">My Bookings</a>
+
+        <a href="login.html">Login</a>
+
+    </div>
+
+</nav>
+
+
+
+<section class="categories">
+
+    <h2>
+        My Bookings
+    </h2>
+
+
+    <div id="bookingsContainer">
+
+        <p>
+            Loading bookings...
+        </p>
+
+    </div>
+
+</section>
+
+
+
+<footer>
+
+    <p>
+        © 2026 LocalFix. All rights reserved.
+    </p>
+
+</footer>
+
+
+
+<script src="js/app.js"></script>
+
+
+<script>
+
+async function loadMyBookings() {
+
+    const container =
+        document.getElementById(
+            "bookingsContainer"
+        );
+
+
+    const token =
+        localStorage.getItem(
+            "access_token"
+        );
+
+
+    if (!token) {
+
+        container.innerHTML = `
+
+            <p>
+                Please login to view your bookings.
+            </p>
+
+            <br>
+
+            <a href="login.html">
+                Login
+            </a>
+
+        `;
+
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/bookings/`,
+                {
+                    headers: {
+                        "Authorization":
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (response.status === 401) {
+
+            localStorage.removeItem(
+                "access_token"
+            );
+
+            window.location.href =
+                "login.html";
+
+            return;
+        }
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail ||
+                "Failed to load bookings"
+            );
+
+        }
+
+
+        const bookings = data;
+
+
+        container.innerHTML = "";
+
+
+        if (bookings.length === 0) {
+
+            container.innerHTML = `
+
+                <p>
+                    You don't have any bookings yet.
+                </p>
+
+                <br>
+
+                <a href="services.html">
+                    Browse Services
+                </a>
+
+            `;
+
+            return;
+        }
+
+
+        bookings.forEach(
+            booking => {
+
+                const card =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                card.className =
+                    "booking-card";
+
+
+                /*
+                =================================
+                Provider Information
+                =================================
+                */
+
+                let providerHTML = "";
+
+
+                if (booking.provider) {
+
+                    providerHTML = `
+
+                        <div class="booking-provider">
+
+                            <h4>
+                                👨‍🔧 Service Professional
+                            </h4>
+
+
+                            <p>
+
+                                <strong>
+                                    ${booking.provider.name}
+                                </strong>
+
+                            </p>
+
+
+                            <p>
+
+                                📞
+                                ${booking.provider.phone}
+
+                            </p>
+
+
+                            <p>
+
+                                📍
+                                ${booking.provider.location}
+
+                            </p>
+
+
+                            <p>
+
+                                ⭐
+                                ${booking.provider.experience}
+                                years experience
+
+                            </p>
+
+
+                            <p>
+
+                                💰
+                                ₹${booking.provider.price}
+                                starting price
+
+                            </p>
+
+                        </div>
+
+                    `;
+
+                }
+
+
+                /*
+                =================================
+                Cancel Button
+                =================================
+                */
+
+                let cancelButton = "";
+
+
+                if (
+                    booking.status !== "Completed" &&
+                    booking.status !== "Cancelled"
+                ) {
+
+                    cancelButton = `
+
+                        <button
+                            class="cancel-button"
+                            onclick="cancelBooking(
+                                '${booking._id}'
+                            )"
+                        >
+
+                            Cancel Booking
+
+                        </button>
+
+                    `;
+
+                }
+
+
+                /*
+                =================================
+                Review
+                =================================
+                */
+
+                let reviewSection = "";
+
+
+                if (
+                    booking.status === "Completed"
+                ) {
+
+                    reviewSection = `
+
+                        <div class="review-box">
+
+                            <h4>
+                                Rate your experience
+                            </h4>
+
+
+                            <select
+                                id="rating-${booking._id}"
+                            >
+
+                                <option value="5">
+                                    ⭐⭐⭐⭐⭐
+                                </option>
+
+                                <option value="4">
+                                    ⭐⭐⭐⭐
+                                </option>
+
+                                <option value="3">
+                                    ⭐⭐⭐
+                                </option>
+
+                                <option value="2">
+                                    ⭐⭐
+                                </option>
+
+                                <option value="1">
+                                    ⭐
+                                </option>
+
+                            </select>
+
+
+                            <textarea
+                                id="comment-${booking._id}"
+                                placeholder="Write your review..."
+                                rows="3"
+                            ></textarea>
+
+
+                            <button
+                                onclick="submitReview(
+                                    '${booking._id}',
+                                    '${booking.provider_id}'
+                                )"
+                            >
+
+                                Submit Review
+
+                            </button>
+
+
+                            <p
+                                id="reviewMessage-${booking._id}"
+                            ></p>
+
+                        </div>
+
+                    `;
+
+                }
+
+
+                /*
+                =================================
+                Booking Card
+                =================================
+                */
+
+                card.innerHTML = `
+
+                    <h3>
+                        ${booking.service}
+                    </h3>
+
+
+                    ${providerHTML}
+
+
+                    <div class="booking-details">
+
+                        <p>
+
+                            📅
+                            <strong>Date:</strong>
+
+                            ${booking.date}
+
+                        </p>
+
+
+                        <p>
+
+                            🕐
+                            <strong>Time:</strong>
+
+                            ${booking.time}
+
+                        </p>
+
+
+                        <p>
+
+                            📍
+                            <strong>Address:</strong>
+
+                            ${booking.address}
+
+                        </p>
+
+
+                        <p>
+
+                            📝
+                            <strong>Problem:</strong>
+
+                            ${booking.description}
+
+                        </p>
+
+
+                        <p>
+
+                            <strong>
+                                Status:
+                            </strong>
+
+
+                            <span class="status">
+
+                                ${booking.status}
+
+                            </span>
+
+                        </p>
+
+                    </div>
+
+
+                    <div class="booking-actions">
+
+                        ${cancelButton}
+
+                    </div>
+
+
+                    ${reviewSection}
+
+                `;
+
+
+                container.appendChild(
+                    card
+                );
+
+            }
+        );
+
+    }
+
+
+    catch (error) {
+
+        console.error(
+            "Booking error:",
+            error
+        );
+
+
+        container.innerHTML = `
+
+            <p>
+                Could not load bookings.
+            </p>
+
+            <br>
+
+            <button
+                onclick="loadMyBookings()"
+            >
+
+                Try Again
+
+            </button>
+
+        `;
+
+    }
+
+}
+
+
+
+/*
+=========================================
+Cancel Booking
+=========================================
+*/
+
+async function cancelBooking(
+    bookingId
+) {
+
+    if (
+        !confirm(
+            "Are you sure you want to cancel this booking?"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    const token =
+        localStorage.getItem(
+            "access_token"
+        );
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/bookings/${bookingId}`,
+                {
+
+                    method: "DELETE",
+
+                    headers: {
+
+                        "Authorization":
+                            `Bearer ${token}`
+
+                    }
+
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            alert(
+                data.detail ||
+                "Could not cancel booking"
+            );
+
+            return;
+
+        }
+
+
+        alert(
+            "Booking cancelled successfully!"
+        );
+
+
+        loadMyBookings();
+
+    }
+
+
+    catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Could not connect to server."
+        );
+
+    }
+
+}
+
+
+
+/*
+=========================================
+Submit Review
+=========================================
+*/
+
+async function submitReview(
+    bookingId,
+    providerId
+) {
+
+    const token =
+        localStorage.getItem(
+            "access_token"
+        );
+
+
+    const user =
+        getUserFromToken();
+
+
+    if (!token || !user) {
+
+        alert(
+            "Please login first."
+        );
+
+        return;
+
+    }
+
+
+    const rating =
+        document.getElementById(
+            `rating-${bookingId}`
+        ).value;
+
+
+    const comment =
+        document.getElementById(
+            `comment-${bookingId}`
+        ).value.trim();
+
+
+    if (!comment) {
+
+        alert(
+            "Please write a comment."
+        );
+
+        return;
+
+    }
+
+
+    const response =
+        await fetch(
+            `${API_URL}/reviews/`,
+            {
+
+                method: "POST",
+
+                headers: {
+
+                    "Content-Type":
+                        "application/json",
+
+                    "Authorization":
+                        `Bearer ${token}`
+
+                },
+
+                body: JSON.stringify({
+
+                    user_id:
+                        user.user_id,
+
+                    provider_id:
+                        providerId,
+
+                    rating:
+                        Number(rating),
+
+                    comment:
+                        comment
+
+                })
+
+            }
+        );
+
+
+    const data =
+        await response.json();
+
+
+    const message =
+        document.getElementById(
+            `reviewMessage-${bookingId}`
+        );
+
+
+    if (!response.ok) {
+
+        message.textContent =
+            data.detail ||
+            "Failed to submit review";
+
+        return;
+
+    }
+
+
+    message.textContent =
+        "⭐ Review submitted successfully!";
+
+
+    document.getElementById(
+        `comment-${bookingId}`
+    ).value = "";
+
+}
+
+
+
+/*
+=========================================
+Start
+=========================================
+*/
+
+loadMyBookings();
+
+</script>
+
+
+</body>
+
+</html>

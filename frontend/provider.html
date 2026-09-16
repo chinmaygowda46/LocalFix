@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>LocalFix - Provider Profile</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+    <!-- NAVBAR -->
+
+    <nav>
+
+        <div class="logo">
+            LocalFix
+        </div>
+
+        <div class="nav-links">
+
+            <a href="index.html">
+                Home
+            </a>
+
+            <a href="services.html">
+                Services
+            </a>
+
+            <a href="bookings.html">
+                My Bookings
+            </a>
+
+            <a href="login.html">
+                Login
+            </a>
+
+        </div>
+
+    </nav>
+
+
+
+    <!-- PROVIDER PAGE -->
+
+    <main class="provider-page">
+
+        <div id="providerContainer">
+
+            <p>
+                Loading provider...
+            </p>
+
+        </div>
+
+
+        <!-- REVIEWS -->
+
+        <div class="reviews-section">
+
+            <div class="reviews-header">
+
+                <h2>
+                    Customer Reviews
+                </h2>
+
+                <div id="ratingSummary">
+                    Loading rating...
+                </div>
+
+            </div>
+
+
+            <div id="reviewsContainer">
+
+                <p>
+                    Loading reviews...
+                </p>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+
+    <!-- FOOTER -->
+
+    <footer>
+
+        <p>
+            © 2026 LocalFix. All rights reserved.
+        </p>
+
+    </footer>
+
+
+
+    <script src="js/app.js"></script>
+
+
+    <script>
+
+        /*
+        =========================================
+        Get Provider ID
+        =========================================
+        */
+
+        const params =
+            new URLSearchParams(
+                window.location.search
+            );
+
+        const providerId =
+            params.get("id");
+
+
+        let currentProvider = null;
+
+
+
+        /*
+        =========================================
+        Load Provider
+        =========================================
+        */
+
+        async function loadProvider() {
+
+            const container =
+                document.getElementById(
+                    "providerContainer"
+                );
+
+
+            if (!providerId) {
+
+                container.innerHTML = `
+
+                    <div class="no-providers">
+
+                        <h3>
+                            Provider not found
+                        </h3>
+
+                    </div>
+
+                `;
+
+                return;
+
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_URL}/providers/`
+                    );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "Failed to load providers"
+                    );
+
+                }
+
+
+                const providers =
+                    await response.json();
+
+
+                currentProvider =
+                    providers.find(
+                        provider =>
+                            provider._id === providerId
+                    );
+
+
+                if (!currentProvider) {
+
+                    container.innerHTML = `
+
+                        <div class="no-providers">
+
+                            <h3>
+                                Provider not found
+                            </h3>
+
+                        </div>
+
+                    `;
+
+                    return;
+
+                }
+
+
+
+                /*
+                =================================
+                Provider Profile
+                =================================
+                */
+
+                container.innerHTML = `
+
+                    <div class="provider-profile">
+
+                        <div class="profile-avatar">
+                            👨‍🔧
+                        </div>
+
+
+                        <div class="profile-info">
+
+                            <h1>
+                                ${currentProvider.name}
+                            </h1>
+
+
+                            <p class="profile-service">
+
+                                ${currentProvider.service}
+
+                            </p>
+
+
+                            <p>
+
+                                📍
+                                ${currentProvider.location}
+
+                            </p>
+
+
+                            <p>
+
+                                📞
+                                ${currentProvider.phone}
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="profile-stats">
+
+
+                        <div>
+
+                            <strong>
+
+                                ${currentProvider.experience}
+
+                            </strong>
+
+                            <span>
+                                Years Experience
+                            </span>
+
+                        </div>
+
+
+
+                        <div>
+
+                            <strong>
+
+                                ₹${currentProvider.price}
+
+                            </strong>
+
+                            <span>
+                                Starting Price
+                            </span>
+
+                        </div>
+
+
+
+                        <div>
+
+                            <strong id="profileRating">
+
+                                ⭐ -
+
+                            </strong>
+
+                            <span>
+                                Customer Rating
+                            </span>
+
+                        </div>
+
+
+                    </div>
+
+
+                    <button
+                        class="profile-book-button"
+                        onclick="bookProvider()"
+                    >
+
+                        Book ${currentProvider.service}
+
+                    </button>
+
+                `;
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Provider error:",
+                    error
+                );
+
+
+                container.innerHTML = `
+
+                    <div class="no-providers">
+
+                        <p>
+                            Could not load provider.
+                        </p>
+
+                    </div>
+
+                `;
+
+            }
+
+        }
+
+
+
+        /*
+        =========================================
+        Book This Specific Provider
+        =========================================
+        */
+
+        function bookProvider() {
+
+            if (!currentProvider) {
+                return;
+            }
+
+
+            const provider =
+                encodeURIComponent(
+                    currentProvider._id
+                );
+
+
+            const service =
+                encodeURIComponent(
+                    currentProvider.service
+                );
+
+
+            window.location.href =
+                `booking.html?service=${service}&provider=${provider}`;
+
+        }
+
+
+
+        /*
+        =========================================
+        Load Reviews
+        =========================================
+        */
+
+        async function loadReviews() {
+
+            const container =
+                document.getElementById(
+                    "reviewsContainer"
+                );
+
+
+            const ratingSummary =
+                document.getElementById(
+                    "ratingSummary"
+                );
+
+
+            if (!providerId) {
+                return;
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_URL}/reviews/${providerId}`
+                    );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "Failed to load reviews"
+                    );
+
+                }
+
+
+                const reviews =
+                    await response.json();
+
+
+
+                /*
+                No Reviews
+                */
+
+                if (reviews.length === 0) {
+
+                    ratingSummary.innerHTML = `
+
+                        <span>
+                            No ratings yet
+                        </span>
+
+                    `;
+
+
+                    const profileRating =
+                        document.getElementById(
+                            "profileRating"
+                        );
+
+
+                    if (profileRating) {
+
+                        profileRating.textContent =
+                            "⭐ New";
+
+                    }
+
+
+                    container.innerHTML = `
+
+                        <div class="review-card">
+
+                            <p>
+
+                                No reviews yet.
+                                Be the first to review!
+
+                            </p>
+
+                        </div>
+
+                    `;
+
+                    return;
+
+                }
+
+
+
+                /*
+                Calculate Average
+                */
+
+                const totalRating =
+                    reviews.reduce(
+                        (sum, review) =>
+                            sum +
+                            Number(review.rating),
+                        0
+                    );
+
+
+                const averageRating =
+                    (
+                        totalRating /
+                        reviews.length
+                    ).toFixed(1);
+
+
+
+                /*
+                Rating Summary
+                */
+
+                ratingSummary.innerHTML = `
+
+                    <span class="average-rating">
+
+                        ⭐ ${averageRating}
+
+                    </span>
+
+
+                    <span class="review-count">
+
+                        ${reviews.length}
+                        review${reviews.length > 1 ? "s" : ""}
+
+                    </span>
+
+                `;
+
+
+
+                const profileRating =
+                    document.getElementById(
+                        "profileRating"
+                    );
+
+
+                if (profileRating) {
+
+                    profileRating.textContent =
+                        `⭐ ${averageRating}`;
+
+                }
+
+
+
+                /*
+                Display Reviews
+                */
+
+                container.innerHTML = "";
+
+
+                reviews.forEach(review => {
+
+                    const card =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    card.className =
+                        "review-card";
+
+
+                    card.innerHTML = `
+
+                        <div class="review-rating">
+
+                            ${"⭐".repeat(
+                                Number(review.rating)
+                            )}
+
+                        </div>
+
+
+                        <p>
+
+                            ${review.comment}
+
+                        </p>
+
+                    `;
+
+
+                    container.appendChild(
+                        card
+                    );
+
+                });
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Review error:",
+                    error
+                );
+
+
+                ratingSummary.textContent =
+                    "Unable to load rating";
+
+
+                container.innerHTML = `
+
+                    <div class="review-card">
+
+                        <p>
+                            Could not load reviews.
+                        </p>
+
+                    </div>
+
+                `;
+
+            }
+
+        }
+
+
+
+        /*
+        =========================================
+        Start
+        =========================================
+        */
+
+        loadProvider();
+
+        loadReviews();
+
+    </script>
+
+
+</body>
+
+</html>
